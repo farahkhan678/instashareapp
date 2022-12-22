@@ -1,17 +1,44 @@
 import {Component} from 'react'
 import Cookies from 'js-cookie'
 import {Redirect} from 'react-router-dom'
+
 import './index.css'
 
 class LoginInsta extends Component {
-  state = {
-    username: '',
-    password: '',
-    SubmitError: false,
-    errorMsg: '',
+  state = {username: '', password: '', showErrorMsg: false, errorMsg: ''}
+
+  onSubmitSuccess = jwtToken => {
+    const {history} = this.props
+    Cookies.set('jwt_token', jwtToken, {expires: 30})
+    history.replace('/')
   }
 
-  onChangeUser = event => {
+  onSubmitFailure = msg => {
+    this.setState({showErrorMsg: true, errorMsg: msg})
+  }
+
+  onSubmitLoginDetails = async event => {
+    event.preventDefault()
+    const {username, password} = this.state
+    const apiUrl = 'https://apis.ccbp.in/login'
+    const userDetails = {
+      username,
+      password,
+    }
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(userDetails),
+    }
+    const response = await fetch(apiUrl, options)
+    const data = await response.json()
+    if (response.ok) {
+      this.onSubmitSuccess(data.jwt_token)
+    } else {
+      this.onSubmitFailure(data.error_msg)
+    }
+  }
+
+  onChangeUsername = event => {
     this.setState({username: event.target.value})
   }
 
@@ -19,99 +46,78 @@ class LoginInsta extends Component {
     this.setState({password: event.target.value})
   }
 
-  onSubmitSuccess = jwtToken => {
-    const {history} = this.props
+  renderUsernameInputContainer = () => {
+    const {username} = this.state
 
-    Cookies.set('jwt_token', jwtToken, {
-      expires: 30,
-    })
-    history.replace('/')
+    return (
+      <div className="input-container-login">
+        <label className="label" htmlFor="username">
+          USERNAME
+        </label>
+        <input
+          className="input-box"
+          type="text"
+          id="username"
+          value={username}
+          placeholder="Username"
+          onChange={this.onChangeUsername}
+        />
+      </div>
+    )
   }
 
-  onSubmitFailure = errorMsg => {
-    this.setState({SubmitError: true, errorMsg})
-  }
+  renderPasswordInputContainer = () => {
+    const {password} = this.state
 
-  submitForm = async event => {
-    event.preventDefault()
-    const {username, password} = this.state
-    const userDetails = {username, password}
-    const url = 'https://apis.ccbp.in/login'
-    const options = {
-      method: 'POST',
-      body: JSON.stringify(userDetails),
-    }
-    const response = await fetch(url, options)
-    const data = await response.json()
-    console.log(data)
-    if (response.ok === true) {
-      this.onSubmitSuccess(data.jwt_token)
-    } else {
-      this.onSubmitFailure(data.error_msg)
-    }
+    return (
+      <div className="input-container-login">
+        <label className="label" htmlFor="password">
+          PASSWORD
+        </label>
+        <input
+          type="password"
+          className="input-box"
+          id="password"
+          placeholder="Password"
+          value={password}
+          onChange={this.onChangePassword}
+        />
+      </div>
+    )
   }
 
   render() {
-    const {SubmitError, errorMsg, password, username} = this.state
-    const jwtToken = Cookies.get('jwt_token')
+    const {showErrorMsg, errorMsg} = this.state
 
-    if (jwtToken !== undefined) {
+    const token = Cookies.get('jwt_token')
+
+    if (token !== undefined) {
       return <Redirect to="/" />
     }
 
     return (
-      <div className="login-form">
+      <div className="login-container">
         <img
-          src="https://img.freepik.com/premium-vector/online-regi…n-people-vector-illustration_2175-1058.jpg?w=1060"
-          className="login-mobile-img"
-          alt="website logo"
-        />
-        <img
-          src="https://img.freepik.com/premium-vector/online-regi…n-people-vector-illustration_2175-1058.jpg?w=1060"
-          className="login-img"
+          src="https://res.cloudinary.com/dq7imhrvo/image/upload/v1643601870/insta%20Shere%20clone/Layer_2_kcc41y.png"
           alt="website login"
+          className="login-image"
         />
-        <form className="form-container" onSubmit={this.submitForm}>
-          <div className="bg-logo-img">
-            <h1 className="head"> InstaShare </h1>
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/725/725278.png"
-              className="login-website-img"
-              alt="website logo"
-            />
-          </div>
-          <div className="input-container">
-            <label className="input-label" htmlFor="username">
-              USERNAME
-            </label>
-            <input
-              type="text"
-              id="username"
-              className="username-input"
-              value={username}
-              onChange={this.onChangeUser}
-              placeholder="Username"
-            />
-          </div>
-          <div className="input-container">
-            {' '}
-            <label className="input-label" htmlFor="password">
-              PASSWORD
-            </label>
-            <input
-              type="password"
-              id="password"
-              className="password-input"
-              value={password}
-              onChange={this.onChangePassword}
-              placeholder="Password"
-            />
-          </div>
-          <button type="submit" className="login-button">
-            Login
-          </button>
-          {SubmitError && <p className="error-message">*{errorMsg}</p>}
-        </form>
+        <div className="login-detail-container">
+          <img
+            src="https://res.cloudinary.com/dq7imhrvo/image/upload/v1643601872/insta%20Shere%20clone/Standard_Collection_8_wutyeq.png"
+            alt="website logo"
+            className="website-logo"
+          />
+          <h1 className="website-head">Insta Share</h1>
+          <form className="form-container" onSubmit={this.onSubmitLoginDetails}>
+            <>{this.renderUsernameInputContainer()}</>
+            <>{this.renderPasswordInputContainer()}</>
+            {showErrorMsg && <p className="error">{errorMsg}</p>}
+            <button className="login-button" type="submit">
+              Login
+            </button>
+          </form>
+        </div>
       </div>
     )
   }

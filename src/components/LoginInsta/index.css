@@ -1,157 +1,118 @@
-.login-form {
+.login-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.login-image {
+  width: 40%;
+  margin: 10px;
+  margin-right: 10px;
+}
+
+.login-detail-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  width: 90%;
-  max-width: 1110px;
-  margin: auto;
+  left: 57.22%;
+  right: 11.11%;
+  top: 26.07%;
+  bottom: 26.07%;
+  background-color: #fefeff;
+  box-shadow: 0px 8px 40px rgba(7, 7, 7, 0.08);
+  border-radius: 8px;
+  padding: 20px;
 }
-
-@media screen and (min-width: 992px) {
-  .login-form {
-    flex-direction: row;
-    justify-content: space-around;
-  }
+.website-logo {
+  left: 70.21%;
+  right: 24.1%;
+  top: 31.93%;
+  bottom: 63.96%;
 }
+.website-head {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 32px;
+  /* identical to box height, or 133% */
 
-.login-mobile-img {
-  width: 500px;
-  margin-top: 50px;
-  margin-bottom: 35px;
-  display: none;
+  text-align: center;
+
+  color: #262626;
 }
-
-@media screen and (min-width: 992px) {
-  .login-website-logo-mobile-img {
-    display: none;
-  }
-}
-
-.login-img {
-  width: 400px;
-}
-
-@media screen and (min-width: 992px) {
-  .login-img {
-    width: 60%;
-    max-width: 524px;
-    flex-shrink: 1;
-    margin-right: 20px;
-  }
-}
-
-.login-website-img {
-  width: 30px;
-}
-
-@media screen and (max-width: 991px) {
-  .login-website-img {
-    width: 25px;
-  }
-}
-
 .form-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 350px;
 }
-
-@media screen and (min-width: 992px) {
-  .form-container {
-    width: 350px;
-    flex-shrink: 0;
-    box-shadow: 0px 20px 40px rgba(197, 40, 176, 0.08);
-    padding: 64px 48px 64px 48px;
-  }
-}
-
-.input-container {
+.input-container-login {
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
-  width: 100%;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
-.input-label {
-  margin-bottom: 0px;
-  font-family: 'Roboto';
-  font-weight: bold;
+.label {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 500;
   font-size: 12px;
   line-height: 16px;
-  color: #6e6bcc;
-}
+  /* identical to box height, or 133% */
 
-.username-input {
-  font-size: 16px;
-  height: 40px;
-  border: 1px solid #d7dfe9;
-  background-color: #e2e8f0;
-  color: #64748b;
-  border-radius: 2px;
-  margin-top: 5px;
-  padding: 8px 16px 8px 16px;
-  outline: none;
-}
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 
-.password-input {
-  font-size: 16px;
-  height: 40px;
-  border: 1px solid #d7dfe9;
-  background-color: #e2e8f0;
-  color: #64748b;
-  border-radius: 2px;
-  margin-top: 5px;
-  padding: 8px 16px 8px 16px;
+  color: #262626;
+  margin-bottom: 5px;
+}
+.input-box {
+  height: 30px;
+  left: 0%;
+  right: 0%;
+  top: 24px;
   outline: none;
+  border-width: 0px;
+  background: #eeeeee;
+  border-radius: 2px;
+  width: 300px;
+}
+.error {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+
+  /* Light / red / 500 */
+
+  color: #ef4444;
 }
 
 .login-button {
-  font-family: 'Roboto';
-  font-weight: bold;
-  font-size: 15px;
-  color: #ffffff;
-  height: 40px;
-  width: 100%;
-  margin-top: 20px;
-  margin-bottom: 2px;
-  background-color: #f39ede;
+  background: #4094ef;
   border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  outline: none;
+  padding: 8px;
+  border-width: 0px;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 0px;
 }
 
-.error-message {
-  align-self: start;
-  font-size: 12px;
-  margin-top: 13px;
-  margin-bottom: 0px;
-  font-family: 'Roboto';
-  font-size: 14px;
-  line-height: 16px;
-  color: #ff0b37;
+@media screen and (max-width: 480px) {
+  .login-image {
+    display: none;
+  }
+  .input-box {
+    margin-bottom: 20px;
+  }
 }
-.bg-logo-img {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  width: 90%;
-}
-.head {
-  font-family: 'Roboto';
-  color: #e67bcb;
-  margin-right: 20px;
-}
-@media screen and (max-width: 992px) {
-  .head {
-    font-size: 28px;
-    font-weight: 600;
+
+@media screen and (max-width: 767px) {
+  .login-image {
+    display: none;
   }
 }

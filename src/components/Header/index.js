@@ -1,173 +1,256 @@
+import {Component} from 'react'
 import {Link, withRouter} from 'react-router-dom'
-
+import {AiOutlineClose} from 'react-icons/ai'
+import {GiHamburgerMenu} from 'react-icons/gi'
+import {HiOutlineLogout} from 'react-icons/hi'
 import {FaSearch} from 'react-icons/fa'
-import {GoThreeBars} from 'react-icons/go'
-import {AiFillCloseCircle} from 'react-icons/ai'
 import Cookies from 'js-cookie'
-import SearchContext from '../../Context/SearchContext'
+import {FiSun} from 'react-icons/fi'
+import {RiMoonFill} from 'react-icons/ri'
+import ThemeContext from '../../Context/ThemeContext'
 import './index.css'
 
-const Header = props => (
-  <SearchContext.Consumer>
-    {value => {
-      const {
-        searchInput,
-        click,
-        onChangeSearchInput,
-        setSearchInput,
-        onMoreOptionsState,
-        searchBox,
-        searchValue,
-        closeHeaderButtonIn,
-      } = value
+class Header extends Component {
+  state = {isShowMobileMenu: false, isShowSearch: false}
 
-      const onLogout = () => {
-        const {history} = props
-        Cookies.remove('jwt_token')
-        history.replace('/login')
-      }
+  onClickHamBergerMenu = () => {
+    this.setState(preState => ({isShowMobileMenu: !preState.isShowMobileMenu}))
+  }
 
-      const closeHeaderButton = () => {
-        closeHeaderButtonIn()
-      }
+  onClickCloseButton = () => {
+    this.setState({isShowMobileMenu: false})
+  }
 
-      const onMoreOptions = () => {
-        onMoreOptionsState()
-      }
+  onClickSearchTab = () => {
+    this.setState(preState => ({isShowSearch: !preState.isShowSearch}))
+  }
 
-      const ChangeSearchInput = event => {
-        onChangeSearchInput(event.target.value)
-      }
+  onClickLogout = () => {
+    const {history} = this.props
+    Cookies.remove('jwt_token')
+    history.replace('/LoginInsta')
+  }
 
-      const onsetSearchInput = () => {
-        setSearchInput()
-      }
+  onClickSearchButton = () => {
+    const {onClickSearch} = this.props
+    onClickSearch()
+  }
 
-      const searchContainerView = () => {
-        searchBox()
-      }
+  onChangeInputSearch = event => {
+    const {changeSearchInput} = this.props
+    changeSearchInput(event.target.value)
+  }
 
-      const searchBoxContainer = () => (
-        <div className="input-container">
-          <input
-            className="search-input"
-            type="search"
-            placeholder="Search Caption"
-            onChange={ChangeSearchInput}
-            value={searchInput}
-          />
-          <button
-            className="button-s"
-            testid="searchIcon"
-            type="button"
-            onClick={onsetSearchInput}
-          >
-            <FaSearch className="search-icon" />
-          </button>
-        </div>
-      )
+  onKeyChangeEnter = event => {
+    const {onEnterSearchInput} = this.props
+    if (event.key === 'Enter') {
+      onEnterSearchInput()
+    }
+  }
 
-      const onMoreOptionELe = () => (
-        <div className="options-container">
-          <ul className="header-links">
-            <li className="link-tag">
-              <Link to="/" className="link">
-                Home
-              </Link>
-            </li>
-            <button
-              className="search-option"
-              type="button"
-              onClick={searchContainerView}
-            >
-              Search
-            </button>
-            <li className="link-tag">
-              <Link to="/my-profile" className="link">
-                Profile
-              </Link>
-            </li>
-          </ul>
-          <button className="logout-button" type="button" onClick={onLogout}>
-            Logout
-          </button>
-          <button
-            className="close-button"
-            type="button"
-            onClick={closeHeaderButton}
-          >
-            <AiFillCloseCircle className="close-button" />
-          </button>
-        </div>
-      )
+  renderSearchInput = () => {
+    const {searchInput} = this.props
+    return (
+      <div className="search-input-container">
+        <input
+          type="search"
+          className="search-input"
+          value={searchInput}
+          placeholder="Search Caption"
+          onChange={this.onChangeInputSearch}
+          onKeyDown={this.onKeyChangeEnter}
+        />
+        <button
+          type="button"
+          className="search-btn"
+          onClick={this.onClickSearchButton}
+        >
+          <FaSearch className="search-icon" />
+        </button>
+      </div>
+    )
+  }
 
-      return (
-        <div className="shadow">
-          <nav className="nav-header">
-            <div className="img-name">
-              <Link to="/">
-                <img
-                  src="https://res.cloudinary.com/dq7imhrvo/image/upload/v1643601872/insta%20Shere%20clone/Standard_Collection_8_wutyeq.png"
-                  alt="website logo"
-                  className="header-img"
-                />
-              </Link>
-              <h1 className="header-head">Insta Share</h1>
-            </div>
-            <div className="right-side">
-              <div className="input-container">
-                <input
-                  className="search-input"
-                  type="search"
-                  placeholder="Search Caption"
-                  onChange={ChangeSearchInput}
-                  value={searchInput}
-                />
-                <button
-                  className="button-s"
-                  testid="searchIcon"
-                  type="button"
-                  onClick={onsetSearchInput}
-                >
-                  <FaSearch className="search-icon" />
-                </button>
+  render() {
+    const {isShowMobileMenu, isShowSearch} = this.state
+    const {searchInput} = this.props
+    return (
+      <ThemeContext.Consumer>
+        {value => {
+          const {isDarkTheme, toggleTheme} = value
+
+          const onClickToggle = () => {
+            toggleTheme()
+          }
+
+          const bgColorClassName = isDarkTheme
+            ? 'nav-bar-bg-dark'
+            : 'nav-bar-bg-light'
+          const navItemClassName = isDarkTheme
+            ? 'list-text-dark-theme'
+            : 'list-text-light-theme'
+
+          const ThemeIcons = isDarkTheme ? (
+            <FiSun size={15} color="#ffffff" />
+          ) : (
+            <RiMoonFill size={15} />
+          )
+
+          return (
+            <nav className={`nav-header ${bgColorClassName}`}>
+              <div className="nav-content">
+                <div className="nav-bar-mobile-logo-container">
+                  <Link to="/" className="nav-link">
+                    <div className="logo-container">
+                      <img
+                        className="website-logo"
+                        src="https://res.cloudinary.com/dahw90b2z/image/upload/v1648981581/Group_qtyxfl.png"
+                        alt="website logo"
+                      />
+                      <h1 className={`nav-menu-item ${navItemClassName}`}>
+                        Insta Share
+                      </h1>
+                    </div>
+                  </Link>
+                  <div className="theme-icon-and-menu-container">
+                    <div className="nav-menu-item">
+                      <button
+                        type="button"
+                        className="theme-btn"
+                        onClick={onClickToggle}
+                      >
+                        {ThemeIcons}
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      className={`nav-mobile-btn ${navItemClassName}`}
+                      onClick={this.onClickHamBergerMenu}
+                    >
+                      <GiHamburgerMenu size={15} />
+                    </button>
+                  </div>
+                </div>
+                {isShowMobileMenu && (
+                  <div className="menu-mobile-container">
+                    <ul className="mobile-menu-nav-item-container">
+                      <li className="nav-menu-item">
+                        <button
+                          type="button"
+                          className="mobile-menu-btn"
+                          onClick={this.onClickSearchTab}
+                        >
+                          <FaSearch className="search-icon-mobile" />
+                        </button>
+                      </li>
+                      <li className="nav-menu-item">
+                        <Link to="/" className="nav-link">
+                          <p className="mobile-menu-item"> Home</p>
+                        </Link>
+                      </li>
+                      <li className="nav-menu-item">
+                        <Link to="/my-profile" className="nav-link">
+                          <p className="mobile-menu-item">Profile</p>
+                        </Link>
+                      </li>
+                      <li className="nav-item-mobile">
+                        <button
+                          type="button"
+                          className="mobile-menu-btn"
+                          onClick={this.onClickLogout}
+                        >
+                          <HiOutlineLogout />
+                        </button>
+                      </li>
+                      <li className="nav-item-mobile">
+                        <button
+                          type="button"
+                          className="mobile-menu-btn"
+                          onClick={this.onClickCloseButton}
+                        >
+                          <AiOutlineClose />
+                        </button>
+                      </li>
+                    </ul>
+                    <div className="nav-item-mobile">
+                      {isShowSearch && (
+                        <div className="search-input-container">
+                          <input
+                            type="search"
+                            className="search-input"
+                            value={searchInput}
+                            placeholder="Search Caption"
+                            onChange={this.onChangeInputSearch}
+                            onKeyDown={this.onKeyChangeEnter}
+                          />
+                          <button
+                            type="button"
+                            className="search-btn"
+                            onClick={this.onClickSearchButton}
+                          >
+                            <FaSearch className="search-icon" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="nav-bar-large-container">
+                  <Link to="/" className="nav-link">
+                    <div className="logo-container">
+                      <img
+                        className="website-logo"
+                        src="https://res.cloudinary.com/dahw90b2z/image/upload/v1648981581/Group_qtyxfl.png"
+                        alt="website logo"
+                      />
+                      <h1 className={`nav-menu-item ${navItemClassName}`}>
+                        Insta Share
+                      </h1>
+                    </div>
+                  </Link>
+                  <ul className="nav-menu">
+                    <li className="nav-menu-item">
+                      {this.renderSearchInput()}
+                    </li>
+                    <li className="nav-menu-item">
+                      <button
+                        type="button"
+                        className="theme-btn"
+                        onClick={onClickToggle}
+                      >
+                        {' '}
+                        {ThemeIcons}
+                      </button>
+                    </li>
+                    <li className="nav-menu-item">
+                      <Link to="/" className="nav-link">
+                        <p className={`${navItemClassName}`}>Home</p>
+                      </Link>
+                    </li>
+
+                    <li className="nav-menu-item">
+                      <Link to="/my-profile" className="nav-link">
+                        <p className={`${navItemClassName}`}>Profile</p>
+                      </Link>
+                    </li>
+                  </ul>
+                  <button
+                    type="button"
+                    className="logout-desktop-btn"
+                    onClick={this.onClickLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
-              <ul className="header-links">
-                <li className="link-tag">
-                  <Link to="/" className="link">
-                    Home
-                  </Link>
-                </li>
-                <li className="link-tag">
-                  <Link to="/my-profile" className="link">
-                    Profile
-                  </Link>
-                </li>
-              </ul>
-              <button
-                className="logout-button"
-                type="button"
-                onClick={onLogout}
-              >
-                Logout
-              </button>
-            </div>
-            <div className="medium-view">
-              <button
-                className="med-button"
-                type="button"
-                onClick={onMoreOptions}
-              >
-                <GoThreeBars className="more-img" />
-              </button>
-            </div>
-          </nav>
-          {click && onMoreOptionELe()}
-          {searchValue && searchBoxContainer()}
-        </div>
-      )
-    }}
-  </SearchContext.Consumer>
-)
+            </nav>
+          )
+        }}
+      </ThemeContext.Consumer>
+    )
+  }
+}
 
 export default withRouter(Header)

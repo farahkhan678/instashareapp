@@ -1,216 +1,228 @@
 import {Component} from 'react'
-import Loader from 'react-loader-spinner'
+import {v4 as uuidv4} from 'uuid'
+import {BsHeart} from 'react-icons/bs'
 import Cookies from 'js-cookie'
-
-import SearchContext from '../../Context/SearchContext'
-
-import PostsItem from '../PostsItem'
+import {Link} from 'react-router-dom'
+import {FaRegComment} from 'react-icons/fa'
+import {BiShareAlt} from 'react-icons/bi'
+import {FcLike} from 'react-icons/fc'
 
 import './index.css'
 
-const apiSearchPostsStatus = {
-  initial: 'INITIAL',
-  inProgress: 'IN_PROGRESS',
-  success: 'SUCCESS',
-  failure: 'FAILURE',
-  empty: 'EMPTY',
-}
+import ThemeContext from '../../Context/ThemeContext'
 
 class SearchPosts extends Component {
   state = {
-    apiSearchPost: apiSearchPostsStatus.initial,
-    searchPostsData: [],
-    button: false,
+    isLiked: false,
+    likedStatus: false,
+    counter: 0,
+    commentShow: false,
+    commentInput: '',
+    commentList: [],
   }
 
-  componentDidMount() {
-    this.getSearchPostList()
-  }
+  renderPostLikeStatus = async () => {
+    const jwtToken = Cookies.get('jwt_token')
 
-  getSearchPostList = async () => {
-    this.setState({apiSearchPost: apiSearchPostsStatus.inProgress})
-    const {input} = this.props
+    const {userPostDetails} = this.props
+    const {postId} = userPostDetails
 
-    const Token = Cookies.get('jwt_token')
-    const apiUrl = `https://apis.ccbp.in/insta-share/posts?search=${input}`
+    const {likedStatus} = this.state
+    console.log(likedStatus)
+
+    const requestedBody = {
+      like_status: likedStatus,
+    }
+
+    const apiUrl = `https://apis.ccbp.in/insta-share/posts/${postId}/like`
     const options = {
-      method: 'GET',
       headers: {
-        Authorization: `Bearer ${Token}`,
+        Authorization: `Bearer ${jwtToken}`,
       },
+      method: 'POST',
+      body: JSON.stringify(requestedBody),
     }
     const response = await fetch(apiUrl, options)
-    if (response.ok) {
-      const data = await response.json()
-      if (data.posts.length === 0) {
-        this.setState({apiSearchPost: apiSearchPostsStatus.empty})
-      } else {
-        const updatedData = data.posts.map(each => ({
-          postId: each.post_id,
-          userId: each.user_id,
-          userName: each.user_name,
-          profilePic: each.profile_pic,
-          postDetails: {
-            imageUrl: each.post_details.image_url,
-            caption: each.post_details.caption,
-          },
-          likesCount: each.likes_count,
-          comments: each.comments.map(eachItem => ({
-            userName: eachItem.user_name,
-            userId: eachItem.user_id,
-            comment: eachItem.comment,
-          })),
-          createdAt: each.created_at,
-        }))
-
-        this.setState({
-          searchPostsData: updatedData,
-          apiSearchPost: apiSearchPostsStatus.success,
-        })
-      }
-    } else {
-      this.setState({apiSearchPost: apiSearchPostsStatus.failure})
+    console.log(response)
+    if (response.ok === true) {
+      const fetchedPostId = await response.json()
+      console.log(fetchedPostId)
     }
   }
 
-  renderLoadingView = () => (
-    <div className="loader-container" testid="loader">
-      <Loader type="TailSpin" color="#4094EF" height={50} width={50} />
-    </div>
-  )
-
-  onRetry = () => {
-    this.setState(
-      {apiSearchPost: apiSearchPostsStatus.inProgress},
-      this.getSearchPostList,
-    )
+  onclickLikeIncrement = () => {
+    this.setState({isLiked: true})
+    this.setState(preState => ({counter: preState.counter + 1}))
+    this.setState({likedStatus: true}, this.renderPostLikeStatus)
   }
 
-  renderPostsFailureView = () => (
-    <div className="failure-view">
-      <img
-        src="https://res.cloudinary.com/dq7imhrvo/image/upload/v1643651534/insta%20Shere%20clone/alert-triangle_hczx0o.png"
-        alt="failure view"
-        className="failure-img"
-      />
-      <p className="failure-head">Something went wrong. Please try again</p>
-      <button className="failure-button" type="button" onClick={this.onRetry}>
-        Try again
-      </button>
-    </div>
-  )
+  onClickLikeDecrement = () => {
+    this.setState({isLiked: false})
+    this.setState(preState => ({counter: preState.counter - 1}))
+    this.setState({likedStatus: false}, this.renderPostLikeStatus)
+  }
 
-  onChangeLikeIcon = async postId => {
-    this.setState(prev => ({
-      button: !prev.button,
+  onCommentToggle = () => {
+    this.setState(preState => ({commentShow: !preState.commentShow}))
+  }
+
+  onChangeCommentInput = event => {
+    this.setState({commentInput: event.target.value})
+  }
+
+  onAddComment = event => {
+    event.preventDefault()
+    const {commentInput} = this.state
+
+    const newComment = {
+      id: uuidv4(),
+      comment: commentInput,
+    }
+
+    this.setState(preState => ({
+      commentList: [...preState.commentList, newComment],
+
+      commentInput: '',
     }))
-    const token = Cookies.get('jwt_token')
-
-    const apiUrl = `https://apis.ccbp.in/insta-share/posts/${postId}/like`
-    const post = {like_status: true}
-    const options = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(post),
-      method: 'POST',
-    }
-    await fetch(apiUrl, options)
-
-    this.setState(prev => ({
-      searchPostsData: prev.searchPostsData.map(each => {
-        if (each.postId === postId) {
-          return {
-            ...each,
-            likesCount: each.likesCount + 1,
-            likeStatus: !each.likeStatus,
-          }
-        }
-        return each
-      }),
-    }))
-  }
-
-  onChangeUnLikeIcon = async postId => {
-    this.setState(prev => ({button: !prev.button}))
-    const token = Cookies.get('jwt_token')
-    const apiUrl = `https://apis.ccbp.in/insta-share/posts/${postId}/like`
-    const post = {like_status: false}
-    const options = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(post),
-      method: 'POST',
-    }
-    await fetch(apiUrl, options)
-    this.setState(prev => ({
-      searchPostsData: prev.searchPostsData.map(each => {
-        if (each.postId === postId) {
-          return {
-            ...each,
-            likesCount: each.likesCount - 1,
-            likeStatus: !each.likeStatus,
-          }
-        }
-        return each
-      }),
-    }))
-  }
-
-  renderPostsSuccessView = () => {
-    const {searchPostsData, button} = this.state
-
-    return (
-      <>
-        <SearchContext.Provider
-          value={{
-            onChangeLikeIcon: this.onChangeLikeIcon,
-            onChangeUnLikeIcon: this.onChangeUnLikeIcon,
-          }}
-        >
-          <h1 className="search-head">Search Results</h1>
-          <ul className="Posts-container-search">
-            {searchPostsData.map(each => (
-              <PostsItem item={each} key={each.postId} button={button} />
-            ))}
-          </ul>
-        </SearchContext.Provider>
-      </>
-    )
-  }
-
-  renderEmptyView = () => (
-    <div className="Not-found-view">
-      <img
-        src="https://res.cloudinary.com/dq7imhrvo/image/upload/v1643965945/insta%20Shere%20clone/Group_c2v5dj.jpg"
-        alt="search not found"
-        className="failure-img"
-      />
-      <h1 className="search_not-found">Search Not Found</h1>
-      <p className="not-found-p">Try different keyword or search again</p>
-    </div>
-  )
-
-  renderPostsView = () => {
-    const {apiSearchPost} = this.state
-
-    switch (apiSearchPost) {
-      case apiSearchPostsStatus.empty:
-        return this.renderEmptyView()
-      case apiSearchPostsStatus.success:
-        return this.renderPostsSuccessView()
-      case apiSearchPostsStatus.inProgress:
-        return this.renderLoadingView()
-      case apiSearchPostsStatus.failure:
-        return this.renderPostsFailureView()
-      default:
-        return null
-    }
   }
 
   render() {
-    return this.renderPostsView()
+    const {userPostDetails} = this.props
+    const {
+      profilePicture,
+      userId,
+      userName,
+      createdAt,
+      likesCount,
+      userComments,
+
+      imageUrl,
+      caption,
+    } = userPostDetails
+
+    const {isLiked, commentShow, commentList, commentInput} = this.state
+
+    return (
+      <ThemeContext.Consumer>
+        {value => {
+          const {isDarkTheme} = value
+
+          const textColor = isDarkTheme
+            ? 'list-text-dark-theme'
+            : 'list-text-light-theme'
+          return (
+            <li className="user-Post-Container">
+              <div className="user-Post-content">
+                <div className="user-profile-container">
+                  <img
+                    className="user-profile-img"
+                    src={profilePicture}
+                    alt="post author profile"
+                  />
+                  <Link to={`/users/${userId}`} className="nav-link">
+                    {' '}
+                    <h1 className={`user-name ${textColor}`}>{userName}</h1>
+                  </Link>
+                </div>
+                <img src={imageUrl} alt="post" className="post-img" />
+                <div className="post-detail-and-share-detail-container">
+                  <div className="reaction-container">
+                    {isLiked ? (
+                      <button
+                        type="button"
+                        className={`like-icon-btn ${textColor}`}
+                        onClick={this.onClickLikeDecrement}
+                      >
+                        <FcLike size={15} />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`like-icon-btn ${textColor}`}
+                        onClick={this.onclickLikeIncrement}
+                      >
+                        <BsHeart
+                          size={15}
+                          className={`like-icon-btn ${textColor}`}
+                        />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={`like-icon-btn ${textColor}`}
+                      onClick={this.onCommentToggle}
+                    >
+                      <FaRegComment />
+                    </button>
+
+                    <BiShareAlt className={`like-icon-btn ${textColor}`} />
+                  </div>
+                  <p className={`post-description ${textColor}`}>
+                    {isLiked ? likesCount + 1 : likesCount} likes
+                  </p>
+                  <p className={`post-description ${textColor}`}>{caption}</p>
+                  {commentShow && (
+                    <form
+                      className="form-comment-container"
+                      onSubmit={this.onAddComment}
+                    >
+                      <textarea
+                        value={commentInput}
+                        placeholder="Your Comment"
+                        onChange={this.onChangeCommentInput}
+                        className={`input-comment ${textColor}`}
+                        rows="1"
+                      />
+                      <button
+                        className={`add-button ${textColor}`}
+                        type="submit"
+                      >
+                        Comment
+                      </button>
+                    </form>
+                  )}
+
+                  <div className="post-details">
+                    <ul className="comment-item">
+                      {commentList.map(eachComment => (
+                        <li key={eachComment.id} className="comment-container">
+                          <p className={`post-description ${textColor}`}>
+                            {eachComment.comment}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                    <ul className="comment-item">
+                      {userComments.map(eachItem => (
+                        <li
+                          key={eachItem.user_id}
+                          className="comment-container"
+                        >
+                          <p className={`post-description ${textColor}`}>
+                            {' '}
+                            <span
+                              span
+                              className={`user-commented ${textColor}`}
+                            >
+                              {eachItem.user_name}
+                            </span>{' '}
+                            {eachItem.comment}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <p className={`post-description ${textColor}`}>
+                      {createdAt}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </li>
+          )
+        }}
+      </ThemeContext.Consumer>
+    )
   }
 }
 

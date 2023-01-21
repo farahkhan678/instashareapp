@@ -1,73 +1,47 @@
 import {Switch, Route, Redirect} from 'react-router-dom'
 import {Component} from 'react'
-
 import LoginInsta from './components/LoginInsta'
-import ProtectedRoute from './components/ProtectedRoute'
-import Home from './components/Home'
-import Profile from './components/Profile'
-import UserProfile from './components/UserProfile'
-import NotFound from './components/NotFound'
-import SearchContext from './Context/SearchContext'
-
 import './App.css'
+import Home from './components/Home'
+import UserProfile from './components/UserProfile'
+import MyProfile from './components/MyProfile'
+import NotFound from './components/NotFound'
+import ProtectedRoute from './components/ProtectedRoute'
+import ThemeContext from './Context/ThemeContext'
 
 class App extends Component {
   state = {
-    searchInput: '',
-    click: false,
-    searchPostView: false,
-    searchValue: false,
+    isDarkTheme: false,
   }
 
-  closeHeaderButtonIn = () => {
-    this.setState(prev => ({click: !prev.click}))
-  }
-
-  onChangeSearchInput = input => {
-    this.setState({searchInput: input})
-  }
-
-  setSearchInput = () => {
-    this.setState(prev => ({searchPostView: !prev.searchPostView}))
-  }
-
-  moreOptions = () => {
-    this.setState(prev => ({click: !prev.click}))
-  }
-
-  searchBox = () => {
-    this.setState(prev => ({
-      searchValue: !prev.searchValue,
-      click: !prev.click,
-    }))
+  toggleTheme = () => {
+    this.setState(preState => ({isDarkTheme: !preState.isDarkTheme}))
   }
 
   render() {
-    const {searchInput, searchPostView, click, searchValue} = this.state
-
+    const {isDarkTheme} = this.state
     return (
-      <SearchContext.Provider
-        value={{
-          searchInput,
-          click,
-          searchPostView,
-          searchValue,
-          onChangeSearchInput: this.onChangeSearchInput,
-          setSearchInput: this.setSearchInput,
-          onMoreOptionsState: this.moreOptions,
-          searchBox: this.searchBox,
-          closeHeaderButtonIn: this.closeHeaderButtonIn,
-        }}
-      >
-        <Switch>
-          <Route exact to path="/login" component={LoginInsta} />
-          <ProtectedRoute exact path="/" component={Home} />
-          <ProtectedRoute exact path="/my-profile" component={Profile} />
-          <ProtectedRoute path="/users/:userId" component={UserProfile} />
-          <Route path="/not-found" component={NotFound} />
-          <Redirect to="/not-found" />
-        </Switch>
-      </SearchContext.Provider>
+      <>
+        <ThemeContext.Provider
+          value={{
+            isDarkTheme,
+            toggleTheme: this.toggleTheme,
+          }}
+        >
+          <Switch>
+            <Route exact path="/LoginInsta" component={LoginInsta} />
+            <ProtectedRoute exact path="/" component={Home} />
+            <ProtectedRoute exact path="/my-profile" component={MyProfile} />
+            <ProtectedRoute
+              exact
+              path="/users/:userId"
+              component={UserProfile}
+            />
+            <Route path="/not-found" component={NotFound} />
+            <Redirect to="/not-found" />
+          </Switch>
+        </ThemeContext.Provider>
+      </>
     )
   }
 }

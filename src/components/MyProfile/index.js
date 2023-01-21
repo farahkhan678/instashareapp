@@ -1,10 +1,11 @@
 import {Component} from 'react'
 import Cookies from 'js-cookie'
 import Loader from 'react-loader-spinner'
-import {BiCamera} from 'react-icons/bi'
 import {BsGrid3X3} from 'react-icons/bs'
+import {BiCamera} from 'react-icons/bi'
 import Header from '../Header'
 import ThemeContext from '../../Context/ThemeContext'
+
 import './index.css'
 
 const apiStatusConstants = {
@@ -13,16 +14,16 @@ const apiStatusConstants = {
   failure: 'FAILURE',
   inProcess: 'IN_PROCESS',
 }
-class UserProfile extends Component {
+class MyProfile extends Component {
   state = {
-    userPostDetails: {},
+    myProfile: {},
     postDetails: [],
     storyDetails: [],
     apiStatus: apiStatusConstants.initial,
   }
 
   componentDidMount() {
-    this.getUserPostDetails()
+    this.getMyProfile()
   }
 
   getUpdatedData = eachItem => ({
@@ -41,14 +42,11 @@ class UserProfile extends Component {
     image: data.image,
   })
 
-  getUserPostDetails = async () => {
+  getMyProfile = async () => {
     this.setState({apiStatus: apiStatusConstants.inProcess})
-    const {match} = this.props
-    const {params} = match
-    const {userId} = params
-
     const jwtToken = Cookies.get('jwt_token')
-    const apiUrl = `https://apis.ccbp.in/insta-share/users/${userId}`
+
+    const apiUrl = `https://apis.ccbp.in/insta-share/my-profile`
     const options = {
       method: 'GET',
       headers: {
@@ -56,20 +54,23 @@ class UserProfile extends Component {
       },
     }
     const response = await fetch(apiUrl, options)
+
     if (response.ok === true) {
       const fetchedData = await response.json()
-      const updatedData = this.getUpdatedData(fetchedData.user_details)
-      const updatedPost = fetchedData.user_details.posts.map(eachData =>
+      console.log(fetchedData)
+      const updatedData = this.getUpdatedData(fetchedData.profile)
+      const updatedPost = fetchedData.profile.posts.map(eachData =>
         this.getUpdatedPostAndStory(eachData),
       )
-      const updatedStory = fetchedData.user_details.stories.map(eachData =>
+
+      const updatedStories = fetchedData.profile.stories.map(eachData =>
         this.getUpdatedPostAndStory(eachData),
       )
 
       this.setState({
-        userPostDetails: updatedData,
+        myProfile: updatedData,
         postDetails: updatedPost,
-        storyDetails: updatedStory,
+        storyDetails: updatedStories,
         apiStatus: apiStatusConstants.success,
       })
     } else {
@@ -77,8 +78,8 @@ class UserProfile extends Component {
     }
   }
 
-  renderUserDetails = () => {
-    const {userPostDetails, postDetails, storyDetails} = this.state
+  renderMyProfileView = () => {
+    const {myProfile, postDetails, storyDetails} = this.state
     const {
       followerCount,
       followingCount,
@@ -88,13 +89,11 @@ class UserProfile extends Component {
       userBio,
       userName,
       userId,
-    } = userPostDetails
-
+    } = myProfile
     return (
       <ThemeContext.Consumer>
         {value => {
           const {isDarkTheme} = value
-
           const textColor = isDarkTheme
             ? 'list-text-dark-theme '
             : 'list-text-light-theme'
@@ -106,7 +105,7 @@ class UserProfile extends Component {
                   <img
                     className="profile-img"
                     src={profilePicture}
-                    alt="user profile"
+                    alt="my profile"
                   />
 
                   <div className="user-post-detail-container">
@@ -114,7 +113,6 @@ class UserProfile extends Component {
                     <ul className="user-follower-container">
                       <li>
                         <p className={`post-count ${textColor}`}>
-                          {' '}
                           <span className={`count ${textColor}`}>
                             {postCount}{' '}
                           </span>
@@ -123,7 +121,6 @@ class UserProfile extends Component {
                       </li>
                       <li>
                         <p className={`post-count ${textColor}`}>
-                          {' '}
                           <span className={`count ${textColor}`}>
                             {followerCount}{' '}
                           </span>
@@ -132,6 +129,7 @@ class UserProfile extends Component {
                       </li>
                       <li>
                         <p className={`post-count ${textColor}`}>
+                          {' '}
                           <span className={`count ${textColor}`}>
                             {followingCount}{' '}
                           </span>
@@ -150,12 +148,13 @@ class UserProfile extends Component {
                         <img
                           className="user-story"
                           src={eachStory.image}
-                          alt="user story"
+                          alt="my story"
                         />
                       </li>
                     ))}
                   </ul>
                 </div>
+
                 <div className="user-all-post-container">
                   <div className="users-all-post">
                     <BsGrid3X3 size={15} className={textColor} />
@@ -168,7 +167,7 @@ class UserProfile extends Component {
                           <img
                             className="posted-img"
                             src={eachPost.image}
-                            alt="user post"
+                            alt="my post"
                           />
                         </li>
                       ))}
@@ -191,7 +190,7 @@ class UserProfile extends Component {
   }
 
   onClickRetry = () => {
-    this.getUserPostDetails()
+    this.getMyProfile()
   }
 
   renderFailureView = () => (
@@ -218,11 +217,11 @@ class UserProfile extends Component {
     </div>
   )
 
-  renderAllUserDetails = () => {
+  renderMyProfileDetailView = () => {
     const {apiStatus} = this.state
     switch (apiStatus) {
       case apiStatusConstants.success:
-        return this.renderUserDetails()
+        return this.renderMyProfileView()
       case apiStatusConstants.failure:
         return this.renderFailureView()
       case apiStatusConstants.inProcess:
@@ -237,12 +236,12 @@ class UserProfile extends Component {
       <ThemeContext.Consumer>
         {value => {
           const {isDarkTheme} = value
-          const bgColorClassName = isDarkTheme ? 'nav-bg-dark' : 'nav-bg-light '
+          const bgColorClassName = isDarkTheme ? 'nav-bg-dark' : 'nav-bg-light'
           return (
             <>
               <Header />
               <div className={`${bgColorClassName}`}>
-                {this.renderAllUserDetails()}
+                {this.renderMyProfileDetailView()}
               </div>
             </>
           )
@@ -252,4 +251,4 @@ class UserProfile extends Component {
   }
 }
 
-export default UserProfile
+export default MyProfile

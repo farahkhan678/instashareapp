@@ -1,41 +1,17 @@
 import {Component} from 'react'
 import Cookies from 'js-cookie'
+
 import {Redirect} from 'react-router-dom'
 
 import './index.css'
 
 class LoginInsta extends Component {
-  state = {username: '', password: '', showErrorMsg: false, errorMsg: ''}
-
-  onSubmitSuccess = jwtToken => {
-    const {history} = this.props
-    Cookies.set('jwt_token', jwtToken, {expires: 30})
-    history.replace('/')
-  }
-
-  onSubmitFailure = msg => {
-    this.setState({showErrorMsg: true, errorMsg: msg})
-  }
-
-  onSubmitLoginDetails = async event => {
-    event.preventDefault()
-    const {username, password} = this.state
-    const apiUrl = 'https://apis.ccbp.in/login'
-    const userDetails = {
-      username,
-      password,
-    }
-    const options = {
-      method: 'POST',
-      body: JSON.stringify(userDetails),
-    }
-    const response = await fetch(apiUrl, options)
-    const data = await response.json()
-    if (response.ok) {
-      this.onSubmitSuccess(data.jwt_token)
-    } else {
-      this.onSubmitFailure(data.error_msg)
-    }
+  state = {
+    username: '',
+    password: '',
+    errorMsg: '',
+    showError: false,
+    showPassword: false,
   }
 
   onChangeUsername = event => {
@@ -46,79 +22,121 @@ class LoginInsta extends Component {
     this.setState({password: event.target.value})
   }
 
-  renderUsernameInputContainer = () => {
-    const {username} = this.state
+  OnShowPassword = () => {
+    this.setState(prevState => ({showPassword: !prevState.showPassword}))
+  }
 
+  renderUsername = () => {
+    const {username} = this.state
     return (
-      <div className="input-container-login">
-        <label className="label" htmlFor="username">
-          USERNAME
+      <>
+        <label htmlFor="name" className="label">
+          Username
         </label>
         <input
-          className="input-box"
           type="text"
-          id="username"
           value={username}
+          id="name"
           placeholder="Username"
           onChange={this.onChangeUsername}
+          className="input"
         />
-      </div>
+      </>
     )
   }
 
-  renderPasswordInputContainer = () => {
-    const {password} = this.state
+  renderPassword = () => {
+    const {password, showPassword} = this.state
+    const inputType = showPassword ? 'text' : 'password'
 
     return (
-      <div className="input-container-login">
+      <>
         <label className="label" htmlFor="password">
-          PASSWORD
+          Password
         </label>
         <input
-          type="password"
-          className="input-box"
+          type={inputType}
           id="password"
           placeholder="Password"
-          value={password}
           onChange={this.onChangePassword}
+          className="input"
+          value={password}
         />
-      </div>
+        <input type="checkbox" id="checkbox" onChange={this.OnShowPassword} />
+        <p htmlFor="checkbox">Show Password</p>
+      </>
     )
+  }
+
+  onSubmitSuccess = jwtToken => {
+    const {history} = this.props
+    Cookies.set('jwt_token', jwtToken, {expires: 30, path: '/'})
+    history.replace('/')
+  }
+
+  onSubmitFailure = errorMsg => {
+    this.setState({showError: true, errorMsg})
+  }
+
+  submitForm = async event => {
+    event.preventDefault()
+    const {username, password} = this.state
+    const userDetails = {username, password}
+    const url = 'https://apis.ccbp.in/login'
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(userDetails),
+    }
+    const response = await fetch(url, options)
+
+    const data = await response.json()
+    if (response.ok === true) {
+      this.onSubmitSuccess(data.jwt_token)
+    } else {
+      this.onSubmitFailure(data.error_msg)
+    }
   }
 
   render() {
-    const {showErrorMsg, errorMsg} = this.state
+    const {showError, errorMsg} = this.state
+    const jwtToken = Cookies.get('jwt_token')
 
-    const token = Cookies.get('jwt_token')
-
-    if (token !== undefined) {
+    if (jwtToken !== undefined) {
       return <Redirect to="/" />
     }
 
     return (
-      <div className="login-container">
-        <img
-          src="https://res.cloudinary.com/dq7imhrvo/image/upload/v1643601870/insta%20Shere%20clone/Layer_2_kcc41y.png"
-          alt="website login"
-          className="login-image"
-        />
-        <div className="login-detail-container">
-          <img
-            src="https://res.cloudinary.com/dq7imhrvo/image/upload/v1643601872/insta%20Shere%20clone/Standard_Collection_8_wutyeq.png"
-            alt="website logo"
-            className="website-logo"
-          />
-          <h1 className="website-head">Insta Share</h1>
-          <form className="form-container" onSubmit={this.onSubmitLoginDetails}>
-            <>{this.renderUsernameInputContainer()}</>
-            <>{this.renderPasswordInputContainer()}</>
-            {showErrorMsg && <p className="error">{errorMsg}</p>}
-            <button className="login-button" type="submit">
-              Login
-            </button>
+      <>
+        <div className="login-app-container">
+          <div className="image-container">
+            <img
+              src="https://res.cloudinary.com/dwwtoll0q/image/upload/v1655963796/Layer_2_ako4nk.png"
+              alt="website login"
+              className="login-image"
+            />
+          </div>
+          <form className="form-container" onSubmit={this.submitForm}>
+            <div className="login-sub-container">
+              <div className="logo-container">
+                <img
+                  src="https://res.cloudinary.com/dmu5r6mys/image/upload/v1645095409/Group_uiqlwh.png"
+                  alt="website logo"
+                  className="logo"
+                />
+                <h1 className="heading">Insta Share</h1>
+              </div>
+              <div className="input-main-container">
+                <div className="input-container">{this.renderUsername()}</div>
+                <div className="input-container">{this.renderPassword()}</div>
+                {showError && <p className="error-msg">*{errorMsg}</p>}
+                <button type="submit" className="submit-btn">
+                  Login
+                </button>
+              </div>
+            </div>
           </form>
         </div>
-      </div>
+      </>
     )
   }
 }
